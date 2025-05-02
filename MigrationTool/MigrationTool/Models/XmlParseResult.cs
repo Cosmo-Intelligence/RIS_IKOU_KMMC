@@ -10,5 +10,9 @@ namespace MigrationTool.Models
 	{
 		public string[] ExamDatas { get; set; } = new string[20];
 		public int ItemGroupCount { get; set; }
+
+		public string IraiSectionId { get; set; }
+		public string IraiDoctorName { get; set; }
+		public string IraiDoctorNo { get; set; }
 	}
 }

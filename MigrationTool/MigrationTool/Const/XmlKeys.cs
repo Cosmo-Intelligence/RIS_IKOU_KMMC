@@ -11,5 +11,9 @@ namespace MigrationTool.Const
 		public const string ItemGroup     = "ItemGroup";
 		public const string OrderItemCode = "OrderItemCode";
 		public const string OrderItemName = "OrderItemName";
+		public const string ReqValue      = "REQVALUE";
+		public const string DeptCode      = "DEPTCODE";
+		public const string ReqDrName     = "REQDRNAME";
+		public const string ReqDrCode     = "REQDRCODE";
 	}
 }

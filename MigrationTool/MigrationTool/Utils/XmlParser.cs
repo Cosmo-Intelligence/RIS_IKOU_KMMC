@@ -71,5 +71,50 @@ namespace MigrationTool.Utils
 			Logger.Log("XMLデータ加工 正常終了");
 			return result;
 		}
+
+		public static XmlParseResult ExtractRequestDatas(string xml, AppSettings settings)
+		{
+			Logger.Log("XMLデータ加工 開始");
+
+			var result = new XmlParseResult();
+
+			if (string.IsNullOrWhiteSpace(xml))
+			{
+				Logger.Log("XMLデータ加工 終了 xmlなし");
+				return result;
+			}
+
+			try
+			{
+				var rawCodes = new Dictionary<string, string[]>();
+				var rawColumns = new Dictionary<string, string[]>();
+
+				var mappings = settings.ExamKindMappings;
+
+				var doc = XDocument.Parse(xml);
+				var reqValues = doc.Descendants(XmlKeys.ReqValue).ToList();
+
+				result.ItemGroupCount = reqValues.Count;
+
+				foreach (var val in reqValues)
+				{
+					string deptCode = val.Element(XmlKeys.DeptCode)?.Value;
+					string reqDrCode = val.Element(XmlKeys.ReqDrCode)?.Value;
+					string reqDrName = val.Element(XmlKeys.ReqDrName)?.Value;
+
+					result.IraiSectionId = deptCode;
+					result.IraiDoctorNo = reqDrCode;
+					result.IraiDoctorName = reqDrName;
+				}
+			}
+			catch (Exception e)
+			{
+				Logger.Log("XMLデータ加工 エラー終了");
+				Logger.LogError(e);
+				return result;
+			}
+			Logger.Log("XMLデータ加工 正常終了");
+			return result;
+		}
 	}
 }

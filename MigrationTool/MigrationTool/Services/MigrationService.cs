@@ -83,32 +83,31 @@ namespace MigrationTool.Services
 			try
 			{
 				// データ取得
-				List<W_Order> orderList = _db.GetRequestDepartmentMigrationData(from, to);
-				result.RecordCount = orderList.Count;
+				List<W_Exam> examList = _db.GetRequestDepartmentMigrationData(from, to);
+				result.RecordCount = examList.Count;
 
 				// 移行件数表示
 				_form.ShowRecordCount(result.RecordCount);
 
-				List<ExSatueiTable> satueiList = new List<ExSatueiTable>();
-				foreach (W_Order order in orderList)
+				List<OrderMainTable> orderMainList = new List<OrderMainTable>();
+				foreach (W_Exam order in examList)
 				{
 					// データ加工
-					var results = XmlParser.ExtractExamDatas(order.ToolVariableInfo, _settings);
+					var results = XmlParser.ExtractRequestDatas(order.ToolVariableInfo, _settings);
 
-					satueiList.Add(new ExSatueiTable
+					orderMainList.Add(new OrderMainTable
 					{
-						RisId = "IKOU" + order.OrderNo,
-						BuiNo = 1,
-						No = results.ItemGroupCount,
-						SatueiStatus = "1",
-						ExamDatas = results.ExamDatas
+						OrderNo = order.OrderNo,
+						IraiSectionId = results.IraiSectionId,
+						IraiDoctorName = results.IraiDoctorName,
+						IraiDoctorNo = results.IraiDoctorNo
 					});
 				}
 
 				// 長期処理が予想されるため偽の進捗バーを出す
 				_form.SetFakeProgressVisible(true);
 
-				result.InsertedCount = _db.InsertExSatueiTable(satueiList);
+				result.InsertedCount = _db.UpdateOrderMainTable(orderMainList);
 
 				// Insert処理が終わったら進捗バーを隠す
 				_form.SetFakeProgressVisible(false);

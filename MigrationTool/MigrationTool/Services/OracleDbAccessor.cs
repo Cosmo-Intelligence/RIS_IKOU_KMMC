@@ -128,27 +128,29 @@ namespace MigrationTool.Services
 			}
 		}
 
-		public List<W_Order> GetRequestDepartmentMigrationData(DateTime from, DateTime to)
+		public List<W_Exam> GetRequestDepartmentMigrationData(DateTime from, DateTime to)
 		{
 			Logger.Log("移行データ取得 開始");
-			List<W_Order> orderList = new List<W_Order>();
+			List<W_Exam> examList = new List<W_Exam>();
 
 			try
 			{
 				string sql = $@"
 				SELECT 
-					{WOrderColumns.OrderNo},
-					{WOrderColumns.ToolVariableInfo}
+					{WExamColumns.OrderNo},
+					{WExamColumns.ToolVariableInfo}
 				FROM 
 					W_ExamDetail
 				WHERE 
-					{WOrderColumns.ToolVariableInfo} IS NOT NULL
+					{WExamColumns.ActiveFlag} = '1'
+				AND 
+					{WExamColumns.ToolVariableInfo} IS NOT NULL
 				AND
-					REGEXP_LIKE({WOrderColumns.ToolVariableInfo}, '[^[:space:]]')
+					REGEXP_LIKE({WExamColumns.ToolVariableInfo}, '[^[:space:]]')
 				AND
-					INSTR({WOrderColumns.ToolVariableInfo}, '{XmlKeys.ItemGroup}') > 0
+					INSTR({WExamColumns.ToolVariableInfo}, '{XmlKeys.ReqValue}') > 0
 				AND
-					TO_DATE({WOrderColumns.RecordCreateTimeStamp}, 'YYYY-MM-DD HH24:MI:SS') BETWEEN :targetFrom AND :targetTo
+					TO_DATE({WExamColumns.RecordCreateTimeStamp}, 'YYYY-MM-DD HH24:MI:SS') BETWEEN :targetFrom AND :targetTo
 				";
 
 				using (var conn = new OracleConnection(connectionString_ikou))
@@ -166,23 +168,23 @@ namespace MigrationTool.Services
 					{
 						while (reader.Read())
 						{
-							var order = new W_Order
+							var exam = new W_Exam
 							{
 								OrderNo = reader[WExamDetailColumns.OrderNo].ToString(),
 								ToolVariableInfo = reader[WExamDetailColumns.ExamConditionGroup].ToString()
 							};
-							orderList.Add(order);
+							examList.Add(exam);
 						}
 					}
 				}
 				Logger.Log("移行データ取得 正常終了");
-				return orderList;
+				return examList;
 			}
 			catch (Exception e)
 			{
 				Logger.Log("移行データ取得 エラー終了");
 				Logger.LogError(e);
-				return orderList;
+				return examList;
 			}
 		}
 
@@ -274,6 +276,56 @@ namespace MigrationTool.Services
 			catch (Exception e)
 			{
 				Logger.Log("Insert処理 エラー終了");
+				Logger.LogError(e);
+				return -1;
+			}
+		}
+
+		public int UpdateOrderMainTable(List<OrderMainTable> orderList)
+		{
+			Logger.Log("Update処理 開始");
+
+			if (orderList == null || orderList.Count == 0)
+			{
+				Logger.Log("Update処理 終了 対象なし");
+				return 0;
+			}
+
+			try
+			{
+				string sql = $@"
+					UPDATE EXSATUEITABLE SET
+						{OrderMainTableColumns.IraiSectionId}   = :irai_section_id,
+						{OrderMainTableColumns.IraiDoctorName}  = :irai_doctor_name,
+						{OrderMainTableColumns.IraiDoctorNo}    = :irai_doctor_no
+					WHERE
+						{OrderMainTableColumns.OrderNo} = :order_no
+				";
+
+				using (var conn = new OracleConnection(connectionString_ris))
+				using (var cmd = new OracleCommand(sql, conn))
+				{
+					cmd.ArrayBindCount = orderList.Count;
+
+					cmd.Parameters.Add("order_no", OracleDbType.Varchar2, orderList.Select(x => x.OrderNo).ToArray(), ParameterDirection.Input);
+					cmd.Parameters.Add("irai_section_id", OracleDbType.Varchar2, orderList.Select(x => x.IraiSectionId).ToArray(), ParameterDirection.Input);
+					cmd.Parameters.Add("irai_doctor_name", OracleDbType.Varchar2, orderList.Select(x => x.IraiDoctorName).ToArray(), ParameterDirection.Input);
+					cmd.Parameters.Add("irai_doctor_no", OracleDbType.Varchar2, orderList.Select(x => x.IraiDoctorNo).ToArray(), ParameterDirection.Input);
+
+					// SQLをログに出す
+					LogSQL(cmd);
+
+					conn.Open();
+
+					int ret = cmd.ExecuteNonQuery();
+
+					Logger.Log("Update処理 正常終了");
+					return ret;
+				}
+			}
+			catch (Exception e)
+			{
+				Logger.Log("Update処理 エラー終了");
 				Logger.LogError(e);
 				return -1;
 			}

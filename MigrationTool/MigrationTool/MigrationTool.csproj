@@ -87,6 +87,8 @@
   <ItemGroup>
     <Compile Include="Const\AppConst.cs" />
     <Compile Include="Const\ExSatueiTableColumns.cs" />
+    <Compile Include="Const\OrderMainTableColumns.cs" />
+    <Compile Include="Const\WExamColumns.cs" />
     <Compile Include="Const\WExamDetailColumns.cs" />
     <Compile Include="Const\WOrderColumns.cs" />
     <Compile Include="Const\XmlKeys.cs" />
@@ -100,6 +102,8 @@
     <Compile Include="Models\ExamMappingPair.cs" />
     <Compile Include="Models\ExecuteResult.cs" />
     <Compile Include="Models\ExSatueiTable.cs" />
+    <Compile Include="Models\OrderMainTable.cs" />
+    <Compile Include="Models\W_Exam.cs" />
     <Compile Include="Models\W_ExamDetail.cs" />
     <Compile Include="Models\W_Order.cs" />
     <Compile Include="Models\XmlParseResult.cs" />
