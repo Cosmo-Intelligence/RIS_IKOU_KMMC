@@ -15,14 +15,14 @@ namespace MigrationTool.Utils
 	{
 		public static XmlParseResult ExtractExamDatas(string xml, AppSettings settings)
 		{
-			Logger.Log("XMLデータ加工 開始");
+			//Logger.Log("XMLデータ加工 開始");
 
 			var result = new XmlParseResult();
 			string[] examDatas = result.ExamDatas;
 
 			if (string.IsNullOrWhiteSpace(xml))
 			{
-				Logger.Log("XMLデータ加工 終了 xmlなし");
+				//Logger.Log("XMLデータ加工 終了 xmlなし");
 				return result;
 			}
 
@@ -68,7 +68,7 @@ namespace MigrationTool.Utils
 				Logger.LogError(e);
 				return result;
 			}
-			Logger.Log("XMLデータ加工 正常終了");
+			//Logger.Log("XMLデータ加工 正常終了");
 			return result;
 		}
 

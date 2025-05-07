@@ -40,7 +40,7 @@ namespace MigrationTool.Services
 					foreach (var item in arr)
 					{
 						value = item?.ToString() ?? "NULL";
-						Logger.Log($"{name}[{i}] : {value}");
+						//Logger.Log($"{name}[{i}] : {value}");
 						i++;
 					}
 				}
@@ -87,6 +87,10 @@ namespace MigrationTool.Services
 				AND
 					TO_DATE({WExamDetailColumns.RecordCreateTimeStamp}, 'YYYY-MM-DD HH24:MI:SS') 
 						BETWEEN :targetFrom AND :targetTo
+				AND
+					{WExamDetailColumns.OrderNo} NOT IN(SELECT SUBSTR(RIS_ID,5,10) FROM RRIS.EXSATUEITABLE WHERE RIS_ID LIKE 'IKOU%')
+				AND
+					SUBSTR({WExamDetailColumns.UpdateDateTimeSec},1 ,4) < '2008'
 				ORDER BY 
 					{WExamDetailColumns.OrderNo} asc,
 					{WExamDetailColumns.ExamNo} asc,
@@ -140,18 +144,20 @@ namespace MigrationTool.Services
 					{WExamColumns.OrderNo},
 					{WExamColumns.ToolVariableInfo}
 				FROM 
-					W_ExamDetail
+					W_Exam
 				WHERE 
 					{WExamColumns.ActiveFlag} = '1'
 				AND 
 					{WExamColumns.ToolVariableInfo} IS NOT NULL
-				AND
-					REGEXP_LIKE({WExamColumns.ToolVariableInfo}, '[^[:space:]]')
-				AND
-					INSTR({WExamColumns.ToolVariableInfo}, '{XmlKeys.ReqValue}') > 0
+				AND 
+					{WExamColumns.DocSeq} = '1'
+				AND 
+					{WExamColumns.DocEndDateTimeSec} IS NOT NULL
 				AND
 					TO_DATE({WExamColumns.RecordCreateTimeStamp}, 'YYYY-MM-DD HH24:MI:SS') BETWEEN :targetFrom AND :targetTo
 				";
+
+
 
 				using (var conn = new OracleConnection(connectionString_ikou))
 				using (var cmd = new OracleCommand(sql, conn))
